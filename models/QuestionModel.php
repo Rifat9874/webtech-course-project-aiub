@@ -49,4 +49,39 @@ class QuestionModel {
         return $questions;
     }
 
+/**
+     *  Update question text.
+     */
+    public function updateQuestion($id, $question_text) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("UPDATE questions SET question_text = ? WHERE id = ?");
+        $stmt->execute([$question_text, $id]);
+    }
+
+    /**
+     * Update all 4 options — reset is_correct then set the correct one.
+     */
+    public function updateOptions($question_id, $options_array, $correct_option_id) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("UPDATE options SET is_correct = 0 WHERE question_id = ?");
+        $stmt->execute([$question_id]);
+        foreach ($options_array as $option) {
+            $stmt = $db->prepare("UPDATE options SET option_text = ? WHERE id = ?");
+            $stmt->execute([$option['text'], $option['id']]);
+        }
+        $stmt = $db->prepare("UPDATE options SET is_correct = 1 WHERE id = ?");
+        $stmt->execute([$correct_option_id]);
+    }
+
+    /**
+     * Delete a question (options first due to FK).
+     */
+    public function deleteQuestion($id) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("DELETE FROM options WHERE question_id = ?");
+        $stmt->execute([$id]);
+        $stmt = $db->prepare("DELETE FROM questions WHERE id = ?");
+        $stmt->execute([$id]);
+    }
+
 }

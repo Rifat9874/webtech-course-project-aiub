@@ -30,6 +30,12 @@ require_once __DIR__ . '/../layout/header.php';
                 <?php endif; ?>
             </div>
 
+ <!-- Description -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Description <span class="text-muted small">(optional)</span></label>
+                <textarea name="description" class="form-control" rows="3"
+                    placeholder="Brief description of what this quiz covers"><?= htmlspecialchars($_POST['description'] ?? ($quiz['description'] ?? '')) ?></textarea>
+            </div>
 
             <!-- Total marks: read-only after creation -->
             <?php if ($isEdit): ?>

@@ -134,4 +134,50 @@ class QuizController {
         require_once __DIR__ . '/../views/instructor/question_manager.php';
     }
 
+/**
+     *  Add a new MCQ question with 4 options.
+     * Validates: question text, all 4 options filled, correct answer selected, marks >= 1.
+     */
+    public function addQuestion($quiz_id) {
+        $this->requireInstructor();
+        $quiz = $this->quizModel->getQuizById($quiz_id);
+        if (!$quiz || $quiz['instructor_id'] != $_SESSION['user_id']) {
+            header('Location: ' . BASE . '?page=instructor/quizzes'); exit;
+        }
+
+        $question_text  = trim($_POST['question_text'] ?? '');
+        $marks          = (int) ($_POST['marks'] ?? 1);
+        $options_raw    = $_POST['options']        ?? [];
+        $correct_letter = $_POST['correct_option'] ?? '';
+
+        $errors = [];
+        if ($question_text === '')    $errors['question_text'] = 'Question text is required.';
+        if (count($options_raw) !== 4) $errors['options'] = 'You must provide exactly 4 options.';
+        else {
+            foreach ($options_raw as $opt) {
+                if (trim($opt) === '') { $errors['options'] = 'All 4 options must be filled in.'; break; }
+            }
+        }
+        if ($correct_letter === '') $errors['correct_option'] = 'Please select the correct answer.';
+        if ($marks < 1)             $errors['marks']          = 'Marks must be at least 1.';
+
+        if (!empty($errors)) {
+            $questions = $this->questionModel->getQuestionsByQuiz($quiz_id);
+            require_once __DIR__ . '/../views/instructor/question_manager.php';
+            return;
+        }
+
+        $order_index = $this->questionModel->countQuestions($quiz_id) + 1;
+        $question_id = $this->questionModel->addQuestion($quiz_id, $question_text, $marks, $order_index);
+
+        foreach ($options_raw as $i => $opt_text) {
+            $this->questionModel->addOption($question_id, trim($opt_text), ($i == $correct_letter) ? 1 : 0);
+        }
+
+        $this->quizModel->updateTotalMarks($quiz_id);
+        header('Location: ' . BASE . '?page=instructor/questions&quiz_id=' . $quiz_id);
+        exit;
+    }
+
+
 }

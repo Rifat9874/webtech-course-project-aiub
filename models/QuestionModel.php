@@ -9,7 +9,7 @@ class QuestionModel {
     }
 
     /**
-     * COMMIT 11: Insert a new question row.
+     * : Insert a new question row.
      */
     public function addQuestion($quiz_id, $question_text, $marks, $order_index) {
         $db = $this->getConn();
@@ -22,7 +22,7 @@ class QuestionModel {
     }
 
     /**
-     * COMMIT 11: Insert one option for a question.
+     * : Insert one option for a question.
      */
     public function addOption($question_id, $option_text, $is_correct) {
         $db = $this->getConn();
@@ -31,4 +31,22 @@ class QuestionModel {
         ");
         $stmt->execute([$question_id, $option_text, $is_correct]);
     }
+/**
+     * : Fetch all questions for a quiz with their options nested.
+     */
+    public function getQuestionsByQuiz($quiz_id) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("SELECT * FROM questions WHERE quiz_id = ? ORDER BY order_index ASC");
+        $stmt->execute([$quiz_id]);
+        $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($questions as &$question) {
+            $optStmt = $db->prepare("SELECT * FROM options WHERE question_id = ? ORDER BY id ASC");
+            $optStmt->execute([$question['id']]);
+            $question['options'] = $optStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        unset($question);
+        return $questions;
+    }
+
 }

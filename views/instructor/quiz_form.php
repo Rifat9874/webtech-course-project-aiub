@@ -18,7 +18,18 @@ require_once __DIR__ . '/../layout/header.php';
             : BASE . '?page=instructor/quizzes/create'; ?>
         <form method="POST" action="<?= $action ?>">
 
-            
+            <!-- Title -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Quiz Title <span class="text-danger">*</span></label>
+                <input type="text" name="title"
+                    class="form-control <?= isset($errors['title']) ? 'is-invalid' : '' ?>"
+                    placeholder="e.g. PHP Fundamentals Quiz"
+                    value="<?= htmlspecialchars($_POST['title'] ?? ($quiz['title'] ?? '')) ?>">
+                <?php if (isset($errors['title'])): ?>
+                    <div class="invalid-feedback"><?= htmlspecialchars($errors['title']) ?></div>
+                <?php endif; ?>
+            </div>
+
 
             <!-- Total marks: read-only after creation -->
             <?php if ($isEdit): ?>

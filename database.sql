@@ -1,0 +1,77 @@
+-- ============================================================
+-- database.sql — Full schema for the Quiz Platform
+-- Import this once in phpMyAdmin
+-- ============================================================
+
+CREATE DATABASE IF NOT EXISTS quiz_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE quiz_platform;
+
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    name          VARCHAR(100)        NOT NULL,
+    email         VARCHAR(150)        NOT NULL UNIQUE,
+    password_hash VARCHAR(255)        NOT NULL,
+    role          ENUM('student','instructor','admin') NOT NULL DEFAULT 'student',
+    is_active     TINYINT(1)          NOT NULL DEFAULT 1,
+    created_at    DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Quizzes table
+CREATE TABLE IF NOT EXISTS quizzes (
+    id                  INT AUTO_INCREMENT PRIMARY KEY,
+    instructor_id       INT             NOT NULL,
+    title               VARCHAR(200)    NOT NULL,
+    description         TEXT,
+    total_marks         INT             NOT NULL DEFAULT 0,
+    time_limit_minutes  INT             NOT NULL DEFAULT 30,
+    status              ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    created_at          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (instructor_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Questions table
+CREATE TABLE IF NOT EXISTS questions (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    quiz_id         INT             NOT NULL,
+    question_text   TEXT            NOT NULL,
+    marks           INT             NOT NULL DEFAULT 1,
+    order_index     INT             NOT NULL DEFAULT 1,
+    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Options table (4 per question)
+CREATE TABLE IF NOT EXISTS options (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    question_id     INT             NOT NULL,
+    option_text     TEXT            NOT NULL,
+    is_correct      TINYINT(1)      NOT NULL DEFAULT 0,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Attempts table
+CREATE TABLE IF NOT EXISTS attempts (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    quiz_id      INT      NOT NULL,
+    student_id   INT      NOT NULL,
+    score        INT      DEFAULT NULL,
+    started_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME DEFAULT NULL,
+    FOREIGN KEY (quiz_id)    REFERENCES quizzes(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(id)   ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Answers table
+CREATE TABLE IF NOT EXISTS answers (
+    id                 INT AUTO_INCREMENT PRIMARY KEY,
+    attempt_id         INT NOT NULL,
+    question_id        INT NOT NULL,
+    selected_option_id INT DEFAULT NULL,
+    FOREIGN KEY (attempt_id)  REFERENCES attempts(id)  ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    FOREIGN KEY (selected_option_id) REFERENCES options(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Default admin account (password: admin123)
+INSERT IGNORE INTO users (name, email, password_hash, role)
+VALUES ('Admin', 'admin@quizapp.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');

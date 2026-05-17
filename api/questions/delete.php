@@ -27,3 +27,7 @@ $quiz = $quizModel->getQuizById($question['quiz_id']);
 if (!$quiz || (int)$quiz['instructor_id'] !== (int)$_SESSION['user_id']) {
     echo json_encode(['success'=>false,'error'=>'You do not own this question.']); exit;
 }
+$questionModel->deleteQuestion($question_id);
+$quizModel->updateTotalMarks($question['quiz_id']);
+
+echo json_encode(['success' => true]);

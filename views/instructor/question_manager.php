@@ -72,3 +72,59 @@ require_once __DIR__ . '/../layout/header.php';
     <?php else: ?>
     <div class="alert alert-secondary mb-4">No questions yet — add your first question below.</div>
     <?php endif; ?>
+    <!-- Add Question Form -->
+    <div class="card p-4">
+        <h5 class="fw-bold mb-3">➕ Add New Question</h5>
+        <form method="POST" action="<?= BASE ?>?page=instructor/questions/add&quiz_id=<?= $quiz['id'] ?>">
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Question Text <span class="text-danger">*</span></label>
+                <textarea name="question_text" rows="2"
+                    class="form-control <?= isset($errors['question_text'])?'is-invalid':'' ?>"
+                    placeholder="Type your MCQ question here…"><?= htmlspecialchars($_POST['question_text'] ?? '') ?></textarea>
+                <?php if (isset($errors['question_text'])): ?>
+                    <div class="invalid-feedback"><?= htmlspecialchars($errors['question_text']) ?></div>
+                <?php endif; ?>
+            </div>
+
+            <?php if (isset($errors['options'])): ?>
+                <div class="alert alert-danger py-2 small"><?= htmlspecialchars($errors['options']) ?></div>
+            <?php endif; ?>
+            <?php if (isset($errors['correct_option'])): ?>
+                <div class="alert alert-danger py-2 small"><?= htmlspecialchars($errors['correct_option']) ?></div>
+            <?php endif; ?>
+
+            <p class="text-muted small mb-2">Select the radio button next to the correct answer:</p>
+
+            <?php $optLabels = ['A','B','C','D']; ?>
+            <?php for ($j = 0; $j < 4; $j++): ?>
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <input type="radio" name="correct_option" value="<?= $j ?>" id="correct_<?= $j ?>"
+                    <?= (isset($_POST['correct_option']) && $_POST['correct_option'] == $j) ? 'checked' : '' ?>>
+                <label for="correct_<?= $j ?>" class="fw-bold text-primary" style="min-width:28px;"><?= $optLabels[$j] ?>.</label>
+                <input type="text" name="options[<?= $j ?>]" class="form-control"
+                    placeholder="Option <?= $optLabels[$j] ?>"
+                    value="<?= htmlspecialchars($_POST['options'][$j] ?? '') ?>">
+            </div>
+            <?php endfor; ?>
+
+            <div class="row mt-3">
+                <div class="col-sm-3">
+                    <label class="form-label fw-semibold">Marks <span class="text-danger">*</span></label>
+                    <input type="number" name="marks" min="1"
+                        class="form-control <?= isset($errors['marks'])?'is-invalid':'' ?>"
+                        value="<?= htmlspecialchars($_POST['marks'] ?? '1') ?>">
+                    <?php if (isset($errors['marks'])): ?>
+                        <div class="invalid-feedback"><?= htmlspecialchars($errors['marks']) ?></div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle me-2"></i>Add Question</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php require_once __DIR__ . '/../layout/footer.php'; ?>

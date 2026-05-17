@@ -37,6 +37,18 @@ require_once __DIR__ . '/../layout/header.php';
                     placeholder="Brief description of what this quiz covers"><?= htmlspecialchars($_POST['description'] ?? ($quiz['description'] ?? '')) ?></textarea>
             </div>
 
+                <!-- Time limit -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Time Limit (minutes) <span class="text-danger">*</span></label>
+                <input type="number" name="time_limit" min="1" max="300"
+                    class="form-control <?= isset($errors['time_limit']) ? 'is-invalid' : '' ?>"
+                    placeholder="e.g. 30"
+                    value="<?= htmlspecialchars($_POST['time_limit'] ?? ($quiz['time_limit_minutes'] ?? '30')) ?>">
+                <?php if (isset($errors['time_limit'])): ?>
+                    <div class="invalid-feedback"><?= htmlspecialchars($errors['time_limit']) ?></div>
+                <?php endif; ?>
+            </div>
+
             <!-- Total marks: read-only after creation -->
             <?php if ($isEdit): ?>
             <div class="mb-3">

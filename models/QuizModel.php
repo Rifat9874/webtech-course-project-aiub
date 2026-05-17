@@ -65,4 +65,41 @@ class QuizModel {
         $stmt->execute([$id]);
     }
 
+
+    /**
+     * COMMIT 10: Flip quiz status between draft and published.
+     */
+    public function toggleStatus($id) {
+        $db   = $this->getConn();
+        $quiz = $this->getQuizById($id);
+        if (!$quiz) return false;
+        $newStatus = ($quiz['status'] === 'draft') ? 'published' : 'draft';
+        $stmt = $db->prepare("UPDATE quizzes SET status = ? WHERE id = ?");
+        $stmt->execute([$newStatus, $id]);
+        return $newStatus;
+    }
+
+    /**
+     * COMMIT 10: Recalculate total_marks by summing all question marks.
+     */
+    public function updateTotalMarks($quiz_id) {
+        $db   = $this->getConn();
+        $stmt = $db->prepare("SELECT COALESCE(SUM(marks), 0) AS total FROM questions WHERE quiz_id = ?");
+        $stmt->execute([$quiz_id]);
+        $row  = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $db->prepare("UPDATE quizzes SET total_marks = ? WHERE id = ?");
+        $stmt->execute([$row['total'], $quiz_id]);
+    }
+
+    /**
+     * COMMIT 10: Count published quizzes (for student dashboard).
+     */
+    public function countPublishedQuizzes() {
+        $db   = $this->getConn();
+        $stmt = $db->prepare("SELECT COUNT(*) as total FROM quizzes WHERE status = 'published'");
+        $stmt->execute();
+        $row  = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($row['total'] ?? 0);
+    }
+
 }

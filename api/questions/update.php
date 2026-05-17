@@ -26,3 +26,18 @@ foreach ($options as $opt) {
     }
 }
 if ($correct_option_id < 1) { echo json_encode(['success'=>false,'error'=>'A correct option must be selected.']); exit; }
+
+require_once __DIR__ . '/../../models/QuestionModel.php';
+require_once __DIR__ . '/../../models/QuizModel.php';
+$questionModel = new QuestionModel();
+$quizModel     = new QuizModel();
+
+$question = $questionModel->getQuestionById($question_id);
+if (!$question) {
+    echo json_encode(['success'=>false,'error'=>'Question not found.']); exit;
+}
+
+$quiz = $quizModel->getQuizById($question['quiz_id']);
+if (!$quiz || (int)$quiz['instructor_id'] !== (int)$_SESSION['user_id']) {
+    echo json_encode(['success'=>false,'error'=>'You do not own this question.']); exit;
+}

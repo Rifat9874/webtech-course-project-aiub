@@ -106,4 +106,20 @@ class QuizController {
         exit;
     }
 
+
+/**
+     *  Delete quiz — ownership check first.
+     */
+    public function deleteQuiz($id) {
+        $this->requireInstructor();
+        $quiz = $this->quizModel->getQuizById($id);
+        if (!$quiz || $quiz['instructor_id'] != $_SESSION['user_id']) {
+            header('Location: ' . BASE . '?page=instructor/quizzes'); exit;
+        }
+        $this->quizModel->deleteQuiz($id);
+        header('Location: ' . BASE . '?page=instructor/quizzes');
+        exit;
+    }
+
+
 }

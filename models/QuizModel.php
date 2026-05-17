@@ -37,4 +37,16 @@ class QuizModel {
         $stmt->execute([$instructor_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+/**
+     * COMMIT 8: Update quiz title, description, time_limit.
+     */
+    public function updateQuiz($id, $title, $description, $time_limit) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("
+            UPDATE quizzes SET title = ?, description = ?, time_limit_minutes = ? WHERE id = ?
+        ");
+        $stmt->execute([$title, $description, $time_limit, $id]);
+    }
+
 }

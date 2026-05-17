@@ -1,25 +1,34 @@
 <?php
 // views/instructor/question_manager.php
+/** @var array $quiz      Injected by QuizController::showQuestions() */
+/** @var array $questions Injected by QuizController::showQuestions() */
+/** @var array $errors    Injected by controller */
 $pageTitle = 'Manage Questions';
 $errors    = $errors ?? [];
 require_once __DIR__ . '/../layout/header.php';
 ?>
 <div class="container py-4">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="<?= BASE ?>?page=instructor/quizzes" class="text-muted text-decoration-none">
-            <h2>Questions: <span><?= htmlspecialchars($quiz['title']) ?></span></h2>
-            <span class="badge ...">...</span>
+            <a href="<?= BASE ?>?page=instructor/quizzes" class="text-muted text-decoration-none small">
+                <i class="bi bi-arrow-left me-1"></i>Back to My Quizzes
+            </a>
+            <h2 class="fw-black mt-1 mb-0">Questions: <span class="text-primary"><?= htmlspecialchars($quiz['title']) ?></span></h2>
+            <span class="badge <?= $quiz['status']==='published'?'bg-success':'bg-secondary' ?> mt-1">
+                <?= $quiz['status']==='published'?'● Published':'○ Draft' ?>
+            </span>
         </div>
         <div class="text-end">
-            <span>...question count & marks...</span>
+            <span class="text-muted small d-block"><?= count($questions) ?> question(s) &bull; <?= (int)$quiz['total_marks'] ?> marks</span>
         </div>
     </div>
+
     <?php if ($quiz['status']==='published' && count($questions)===0): ?>
-        <div class="alert alert-warning">...</div>
+        <div class="alert alert-warning">⚠️ This quiz is <strong>published</strong> but has <strong>no questions</strong>. Please add questions below.</div>
     <?php endif; ?>
-</div>
-<!-- Questions Table -->
+
+    <!-- Questions Table -->
     <?php if (!empty($questions)): ?>
     <div class="card mb-5">
         <div class="table-responsive">
@@ -72,6 +81,7 @@ require_once __DIR__ . '/../layout/header.php';
     <?php else: ?>
     <div class="alert alert-secondary mb-4">No questions yet — add your first question below.</div>
     <?php endif; ?>
+
     <!-- Add Question Form -->
     <div class="card p-4">
         <h5 class="fw-bold mb-3">➕ Add New Question</h5>
@@ -127,7 +137,6 @@ require_once __DIR__ . '/../layout/header.php';
     </div>
 </div>
 
-<?php require_once __DIR__ . '/../layout/footer.php'; ?>
 <script>
 const originalData = {};
 <?php foreach ($questions as $q): ?>
@@ -235,3 +244,5 @@ function escHtml(text) {
     return d.innerHTML;
 }
 </script>
+
+<?php require_once __DIR__ . '/../layout/footer.php'; ?>

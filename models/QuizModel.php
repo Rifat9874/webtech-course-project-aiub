@@ -49,4 +49,20 @@ class QuizModel {
         $stmt->execute([$title, $description, $time_limit, $id]);
     }
 
+/**
+     * COMMIT 9: Delete quiz with manual cascade — options → questions → quiz.
+     */
+    public function deleteQuiz($id) {
+        $db = $this->getConn();
+        // Step 1: Delete options
+        $stmt = $db->prepare("DELETE o FROM options o INNER JOIN questions q ON o.question_id = q.id WHERE q.quiz_id = ?");
+        $stmt->execute([$id]);
+        // Step 2: Delete questions
+        $stmt = $db->prepare("DELETE FROM questions WHERE quiz_id = ?");
+        $stmt->execute([$id]);
+        // Step 3: Delete quiz
+        $stmt = $db->prepare("DELETE FROM quizzes WHERE id = ?");
+        $stmt->execute([$id]);
+    }
+
 }

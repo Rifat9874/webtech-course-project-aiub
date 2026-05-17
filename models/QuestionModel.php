@@ -84,4 +84,24 @@ class QuestionModel {
         $stmt->execute([$id]);
     }
 
+/**
+     *  Count questions in a quiz (used for order_index).
+     */
+    public function countQuestions($quiz_id) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("SELECT COUNT(*) FROM questions WHERE quiz_id = ?");
+        $stmt->execute([$quiz_id]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     *  Get one question by ID (used in API for ownership check).
+     */
+    public function getQuestionById($id) {
+        $db = $this->getConn();
+        $stmt = $db->prepare("SELECT * FROM questions WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
 }

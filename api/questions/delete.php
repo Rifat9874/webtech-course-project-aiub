@@ -9,6 +9,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'instructor') {
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     echo json_encode(['success'=>false,'error'=>'Method not allowed. Use DELETE.']); exit;
 }
+
 require_once __DIR__ . '/../../models/QuestionModel.php';
 require_once __DIR__ . '/../../models/QuizModel.php';
 $questionModel = new QuestionModel();
@@ -27,6 +28,7 @@ $quiz = $quizModel->getQuizById($question['quiz_id']);
 if (!$quiz || (int)$quiz['instructor_id'] !== (int)$_SESSION['user_id']) {
     echo json_encode(['success'=>false,'error'=>'You do not own this question.']); exit;
 }
+
 $questionModel->deleteQuestion($question_id);
 $quizModel->updateTotalMarks($question['quiz_id']);
 

@@ -128,3 +128,110 @@ require_once __DIR__ . '/../layout/header.php';
 </div>
 
 <?php require_once __DIR__ . '/../layout/footer.php'; ?>
+<script>
+const originalData = {};
+<?php foreach ($questions as $q): ?>
+originalData[<?= $q['id'] ?>] = {
+    text: <?= json_encode($q['question_text']) ?>,
+    options: <?= json_encode(array_values($q['options'])) ?>
+};
+<?php endforeach; ?>
+
+function startEdit(qid) {
+    const data = originalData[qid];
+    document.getElementById('qtext-display-' + qid).innerHTML =
+        `<textarea class="form-control form-control-sm" id="edit-qtext-${qid}" rows="2">${escHtml(data.text)}</textarea>`;
+
+    let optHtml = '<div class="small">';
+    data.options.forEach(opt => {
+        optHtml += `<div class="d-flex align-items-center gap-2 mb-1">
+            <input type="radio" name="correct-${qid}" value="${opt.id}" id="radio-${opt.id}" ${opt.is_correct?'checked':''}>
+            <input type="text" class="form-control form-control-sm" id="edit-opt-${opt.id}" value="${escHtml(opt.option_text)}">
+        </div>`;
+    });
+    optHtml += '</div>';
+    document.getElementById('options-display-' + qid).innerHTML = optHtml;
+
+    document.getElementById('edit-btn-'   + qid).classList.add('d-none');
+    document.getElementById('save-btn-'   + qid).classList.remove('d-none');
+    document.getElementById('cancel-btn-' + qid).classList.remove('d-none');
+}
+
+function cancelEdit(qid) {
+    const data = originalData[qid];
+    document.getElementById('qtext-display-' + qid).textContent = data.text;
+
+    let optHtml = '<ul class="list-unstyled mb-0 small">';
+    data.options.forEach(opt => {
+        const icon = opt.is_correct ? '<span class="text-success fw-bold">✔</span>' : '<span class="text-muted">○</span>';
+        optHtml += `<li>${icon} ${escHtml(opt.option_text)}</li>`;
+    });
+    optHtml += '</ul>';
+    document.getElementById('options-display-' + qid).innerHTML = optHtml;
+
+    document.getElementById('edit-btn-'   + qid).classList.remove('d-none');
+    document.getElementById('save-btn-'   + qid).classList.add('d-none');
+    document.getElementById('cancel-btn-' + qid).classList.add('d-none');
+}
+
+async function saveQuestion(qid) {
+    const data    = originalData[qid];
+    const newText = document.getElementById('edit-qtext-' + qid).value.trim();
+    if (!newText) { alert('Question text cannot be empty.'); return; }
+
+    const options = [];
+    let correctOptionId = null;
+    for (const opt of data.options) {
+        const textInput  = document.getElementById('edit-opt-'  + opt.id);
+        const radioInput = document.getElementById('radio-' + opt.id);
+        if (!textInput.value.trim()) { alert('All options must be filled in.'); return; }
+        options.push({ id: opt.id, text: textInput.value.trim() });
+        if (radioInput && radioInput.checked) correctOptionId = opt.id;
+    }
+    if (!correctOptionId) { alert('Please select the correct answer.'); return; }
+
+    const saveBtn = document.getElementById('save-btn-' + qid);
+    saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+
+    try {
+        const base = BASE_URL.replace('/public/index.php', '');
+        const res  = await fetch(base + '/api/questions/update.php', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question_id: qid, question_text: newText, options, correct_option_id: correctOptionId })
+        });
+        const result = await res.json();
+        if (result.success) {
+            originalData[qid].text = newText;
+            originalData[qid].options = data.options.map(opt => {
+                const upd = options.find(o => o.id === opt.id);
+                return { id: opt.id, option_text: upd ? upd.text : opt.option_text, is_correct: (opt.id === correctOptionId) ? 1 : 0 };
+            });
+            cancelEdit(qid);
+        } else { alert('Error: ' + (result.error || 'Could not save.')); }
+    } catch(e) { alert('Network error. Please try again.'); }
+    finally { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Save'; }
+}
+
+async function deleteQuestion(qid) {
+    if (!confirm('Delete this question? This cannot be undone.')) return;
+    try {
+        const base = BASE_URL.replace('/public/index.php', '');
+        const res  = await fetch(base + '/api/questions/delete.php', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question_id: qid })
+        });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('question-row-' + qid)?.remove();
+        } else { alert('Error: ' + (result.error || 'Could not delete.')); }
+    } catch(e) { alert('Network error. Please try again.'); }
+}
+
+function escHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+</script>

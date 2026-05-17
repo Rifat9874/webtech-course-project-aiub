@@ -120,6 +120,18 @@ class QuizController {
         header('Location: ' . BASE . '?page=instructor/quizzes');
         exit;
     }
-
+/**
+     *  Load question manager page for a quiz.
+     */
+    public function showQuestions($quiz_id) {
+        $this->requireInstructor();
+        $quiz = $this->quizModel->getQuizById($quiz_id);
+        if (!$quiz || $quiz['instructor_id'] != $_SESSION['user_id']) {
+            header('Location: ' . BASE . '?page=instructor/quizzes'); exit;
+        }
+        $questions = $this->questionModel->getQuestionsByQuiz($quiz_id);
+        $errors    = [];
+        require_once __DIR__ . '/../views/instructor/question_manager.php';
+    }
 
 }

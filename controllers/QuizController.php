@@ -64,4 +64,46 @@ class QuizController {
         header('Location: ' . BASE . '?page=instructor/quizzes');
         exit;
     }
+
+
+
+/**
+     * COMMIT 17: Show edit form pre-filled — only for quiz owner.
+     */
+    public function showEdit($id) {
+        $this->requireInstructor();
+        $quiz = $this->quizModel->getQuizById($id);
+        if (!$quiz || $quiz['instructor_id'] != $_SESSION['user_id']) {
+            header('Location: ' . BASE . '?page=instructor/quizzes'); exit;
+        }
+        $errors = [];
+        require_once __DIR__ . '/../views/instructor/quiz_form.php';
+    }
+
+    /**
+     *  Handle edit POST — ownership check before saving.
+     */
+    public function editQuiz($id) {
+        $this->requireInstructor();
+        $quiz = $this->quizModel->getQuizById($id);
+        if (!$quiz || $quiz['instructor_id'] != $_SESSION['user_id']) {
+            header('Location: ' . BASE . '?page=instructor/quizzes'); exit;
+        }
+        $title       = trim($_POST['title']       ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $time_limit  = (int) ($_POST['time_limit'] ?? 0);
+
+        $errors = [];
+        if ($title === '')   $errors['title']      = 'Title is required.';
+        if ($time_limit < 1) $errors['time_limit'] = 'Time limit must be at least 1 minute.';
+
+        if (!empty($errors)) {
+            require_once __DIR__ . '/../views/instructor/quiz_form.php';
+            return;
+        }
+        $this->quizModel->updateQuiz($id, $title, $description, $time_limit);
+        header('Location: ' . BASE . '?page=instructor/quizzes');
+        exit;
+    }
+
 }

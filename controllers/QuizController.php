@@ -28,4 +28,40 @@ class QuizController {
         $quizzes = $this->quizModel->getQuizzesByInstructor($_SESSION['user_id']);
         require_once __DIR__ . '/../views/instructor/quiz_list.php';
     }
+
+
+
+    /**
+     *  Show blank create form.
+     */
+    public function showCreate() {
+        $this->requireInstructor();
+        $quiz   = null;
+        $errors = [];
+        require_once __DIR__ . '/../views/instructor/quiz_form.php';
+    }
+
+    /**
+     *  Handle create form POST — validates title and time_limit.
+     */
+    public function createQuiz() {
+        $this->requireInstructor();
+        $title       = trim($_POST['title']       ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $time_limit  = (int) ($_POST['time_limit'] ?? 0);
+
+        $errors = [];
+        if ($title === '')    $errors['title']      = 'Title is required.';
+        if ($time_limit < 1)  $errors['time_limit'] = 'Time limit must be at least 1 minute.';
+
+        if (!empty($errors)) {
+            $quiz = null;
+            require_once __DIR__ . '/../views/instructor/quiz_form.php';
+            return;
+        }
+
+        $this->quizModel->createQuiz($_SESSION['user_id'], $title, $description, $time_limit);
+        header('Location: ' . BASE . '?page=instructor/quizzes');
+        exit;
+    }
 }

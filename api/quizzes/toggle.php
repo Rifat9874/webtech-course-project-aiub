@@ -26,3 +26,17 @@ if ((int)$quiz['instructor_id'] !== (int)$_SESSION['user_id']) {
     echo json_encode(['success'=>false,'error'=>'You do not own this quiz.']); exit;
 }
 
+
+           
+        // Block publishing if no questions
+if ($quiz['status'] === 'draft') {
+    $questionModel = new QuestionModel();
+    if ($questionModel->countQuestions($quiz_id) < 1) {
+        echo json_encode(['success'=>false,'error'=>'Add at least one question before publishing.']); exit;
+    }
+}
+
+$newStatus = $quizModel->toggleStatus($quiz_id);
+if ($newStatus === false) { echo json_encode(['success'=>false,'error'=>'Could not toggle status.']); exit; }
+
+echo json_encode(['success' => true, 'new_status' => $newStatus]);

@@ -13,6 +13,15 @@ define('BASE', rtrim($scriptDir, '/') . '/public/index.php');
 require_once __DIR__ . '/../config/database.php';
 
 // Load Models
+// ── Base URL — AUTO-DETECTED so it works on any XAMPP setup ──
+// This detects the path automatically. No manual editing needed!
+$scriptDir = dirname(dirname($_SERVER['SCRIPT_NAME']));
+define('BASE', rtrim($scriptDir, '/') . '/public/index.php');
+
+// ── Load database config ──
+require_once __DIR__ . '/../config/database.php';
+
+// ── Load all Models ──
 require_once __DIR__ . '/../models/UserModel.php';
 require_once __DIR__ . '/../models/QuizModel.php';
 require_once __DIR__ . '/../models/QuestionModel.php';
@@ -20,6 +29,7 @@ require_once __DIR__ . '/../models/AttemptModel.php';
 require_once __DIR__ . '/../models/ResultModel.php';
 
 // Load Controllers
+// ── Load all Controllers ──
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/QuizController.php';
 require_once __DIR__ . '/../controllers/StudentController.php';
@@ -28,6 +38,13 @@ require_once __DIR__ . '/../controllers/ResultController.php';
 $page   = $_GET['page'] ?? 'home';
 $method = $_SERVER['REQUEST_METHOD'];
 
+// ── Read current page and request method ──
+$page   = $_GET['page'] ?? 'home';
+$method = $_SERVER['REQUEST_METHOD'];
+
+// ─────────────────────────────────────────────────────────────
+// HELPER: requireLogin()
+// ─────────────────────────────────────────────────────────────
 function requireLogin() {
     if (empty($_SESSION['user_id'])) {
         header('Location: ' . BASE . '?page=login');
@@ -35,6 +52,9 @@ function requireLogin() {
     }
 }
 
+// ─────────────────────────────────────────────────────────────
+// HELPER: requireRole($role)
+// ─────────────────────────────────────────────────────────────
 function requireRole(string $role) {
     requireLogin();
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== $role) {
@@ -57,6 +77,15 @@ if ($page === 'home' || $page === '') {
     require_once __DIR__ . '/../views/layout/home.php';
 
 // AUTH ROUTES
+// =============================================================
+// HOMEPAGE
+// =============================================================
+if ($page === 'home' || $page === '') {
+    require_once __DIR__ . '/../views/layout/home.php';
+
+// =============================================================
+// AUTH ROUTES
+// =============================================================
 } elseif ($page === 'register') {
     $auth = new AuthController();
     ($method === 'POST') ? $auth->register() : $auth->showRegister();
@@ -70,6 +99,9 @@ if ($page === 'home' || $page === '') {
     $auth->logout();
 
 // STUDENT ROUTES
+// =============================================================
+// STUDENT ROUTES
+// =============================================================
 } elseif ($page === 'student/home') {
     requireRole('student');
     $db        = getDB();
@@ -86,6 +118,10 @@ if ($page === 'home' || $page === '') {
     requireRole('student');
     $quiz_id = isset($_GET['quiz_id']) ? (int) $_GET['quiz_id'] : 0;
     if ($quiz_id < 1) { header('Location: ' . BASE . '?page=student/quizzes'); exit; }
+    if ($quiz_id < 1) {
+        header('Location: ' . BASE . '?page=student/quizzes');
+        exit;
+    }
     $studentController = new StudentController();
     $studentController->startQuiz($quiz_id);
 
@@ -95,6 +131,9 @@ if ($page === 'home' || $page === '') {
     $resultController->myResults();
 
 // INSTRUCTOR ROUTES
+// =============================================================
+// INSTRUCTOR ROUTES
+// =============================================================
 } elseif ($page === 'instructor/home') {
     requireRole('instructor');
     $db        = getDB();
@@ -121,6 +160,10 @@ if ($page === 'home' || $page === '') {
 } elseif ($page === 'instructor/quizzes/delete') {
     requireRole('instructor');
     if ($method !== 'POST') { header('Location: ' . BASE . '?page=instructor/quizzes'); exit; }
+    if ($method !== 'POST') {
+        header('Location: ' . BASE . '?page=instructor/quizzes');
+        exit;
+    }
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
     $quizController = new QuizController();
     $quizController->deleteQuiz($id);
@@ -134,6 +177,10 @@ if ($page === 'home' || $page === '') {
 } elseif ($page === 'instructor/questions/add') {
     requireRole('instructor');
     if ($method !== 'POST') { header('Location: ' . BASE . '?page=instructor/quizzes'); exit; }
+    if ($method !== 'POST') {
+        header('Location: ' . BASE . '?page=instructor/quizzes');
+        exit;
+    }
     $quiz_id = isset($_GET['quiz_id']) ? (int) $_GET['quiz_id'] : 0;
     $quizController = new QuizController();
     $quizController->addQuestion($quiz_id);
@@ -144,6 +191,9 @@ if ($page === 'home' || $page === '') {
     $resultController->analytics();
 
 // ADMIN ROUTES
+// =============================================================
+// ADMIN ROUTES
+// =============================================================
 } elseif ($page === 'admin/panel') {
     requireRole('admin');
     $db        = getDB();
@@ -152,6 +202,9 @@ if ($page === 'home' || $page === '') {
     require_once __DIR__ . '/../views/admin/panel.php';
 
 // RESULTS & LEADERBOARD
+// =============================================================
+// RESULTS & LEADERBOARD
+// =============================================================
 } elseif ($page === 'result') {
     requireLogin();
     $attempt_id = isset($_GET['attempt_id']) ? (int) $_GET['attempt_id'] : 0;
@@ -164,6 +217,13 @@ if ($page === 'home' || $page === '') {
     require_once __DIR__ . '/../views/results/leaderboard.php';
 
 // 404
+} else {
+    http_response_code(404);
+    require_once __DIR__ . '/../views/layout/404.php';
+}
+// =============================================================
+// 404
+// =============================================================
 } else {
     http_response_code(404);
     require_once __DIR__ . '/../views/layout/404.php';

@@ -15,6 +15,15 @@ $charset = 'utf8mb4';       // Supports all characters + emojis
 // getDB() — Call this anywhere to get a PDO database connection
 // Example: $db = getDB();
 // ─────────────────────────────────────────────────────────────
+
+
+$host    = 'localhost';     
+$dbname  = 'quiz_platform';  
+$user    = 'root';          
+$pass    = '';              
+$charset = 'utf8mb4';       
+
+
 function getDB() {
     global $host, $dbname, $user, $pass, $charset;
 
@@ -31,4 +40,5 @@ function getDB() {
     } catch (PDOException $e) {
         die("Database connection failed: " . $e->getMessage());
     }
+}
 }

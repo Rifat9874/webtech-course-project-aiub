@@ -5,6 +5,14 @@
 
 session_start();
 
+// Base URL auto-detected
+$scriptDir = dirname(dirname($_SERVER['SCRIPT_NAME']));
+define('BASE', rtrim($scriptDir, '/') . '/public/index.php');
+
+// Load config
+require_once __DIR__ . '/../config/database.php';
+
+// Load Models
 // ── Base URL — AUTO-DETECTED so it works on any XAMPP setup ──
 // This detects the path automatically. No manual editing needed!
 $scriptDir = dirname(dirname($_SERVER['SCRIPT_NAME']));
@@ -20,11 +28,15 @@ require_once __DIR__ . '/../models/QuestionModel.php';
 require_once __DIR__ . '/../models/AttemptModel.php';
 require_once __DIR__ . '/../models/ResultModel.php';
 
+// Load Controllers
 // ── Load all Controllers ──
 require_once __DIR__ . '/../controllers/AuthController.php';
 require_once __DIR__ . '/../controllers/QuizController.php';
 require_once __DIR__ . '/../controllers/StudentController.php';
 require_once __DIR__ . '/../controllers/ResultController.php';
+
+$page   = $_GET['page'] ?? 'home';
+$method = $_SERVER['REQUEST_METHOD'];
 
 // ── Read current page and request method ──
 $page   = $_GET['page'] ?? 'home';
@@ -60,6 +72,11 @@ function requireRole(string $role) {
     }
 }
 
+// HOMEPAGE
+if ($page === 'home' || $page === '') {
+    require_once __DIR__ . '/../views/layout/home.php';
+
+// AUTH ROUTES
 // =============================================================
 // HOMEPAGE
 // =============================================================
@@ -81,6 +98,7 @@ if ($page === 'home' || $page === '') {
     $auth = new AuthController();
     $auth->logout();
 
+// STUDENT ROUTES
 // =============================================================
 // STUDENT ROUTES
 // =============================================================
@@ -99,6 +117,7 @@ if ($page === 'home' || $page === '') {
 } elseif ($page === 'student/quiz/start') {
     requireRole('student');
     $quiz_id = isset($_GET['quiz_id']) ? (int) $_GET['quiz_id'] : 0;
+    if ($quiz_id < 1) { header('Location: ' . BASE . '?page=student/quizzes'); exit; }
     if ($quiz_id < 1) {
         header('Location: ' . BASE . '?page=student/quizzes');
         exit;
@@ -111,6 +130,7 @@ if ($page === 'home' || $page === '') {
     $resultController = new ResultController();
     $resultController->myResults();
 
+// INSTRUCTOR ROUTES
 // =============================================================
 // INSTRUCTOR ROUTES
 // =============================================================
@@ -139,6 +159,7 @@ if ($page === 'home' || $page === '') {
 
 } elseif ($page === 'instructor/quizzes/delete') {
     requireRole('instructor');
+    if ($method !== 'POST') { header('Location: ' . BASE . '?page=instructor/quizzes'); exit; }
     if ($method !== 'POST') {
         header('Location: ' . BASE . '?page=instructor/quizzes');
         exit;
@@ -155,6 +176,7 @@ if ($page === 'home' || $page === '') {
 
 } elseif ($page === 'instructor/questions/add') {
     requireRole('instructor');
+    if ($method !== 'POST') { header('Location: ' . BASE . '?page=instructor/quizzes'); exit; }
     if ($method !== 'POST') {
         header('Location: ' . BASE . '?page=instructor/quizzes');
         exit;
@@ -168,6 +190,7 @@ if ($page === 'home' || $page === '') {
     $resultController = new ResultController();
     $resultController->analytics();
 
+// ADMIN ROUTES
 // =============================================================
 // ADMIN ROUTES
 // =============================================================
@@ -178,6 +201,7 @@ if ($page === 'home' || $page === '') {
     $users     = $userModel->getAllUsers();
     require_once __DIR__ . '/../views/admin/panel.php';
 
+// RESULTS & LEADERBOARD
 // =============================================================
 // RESULTS & LEADERBOARD
 // =============================================================
@@ -192,6 +216,11 @@ if ($page === 'home' || $page === '') {
     $leaders = $model->getLeaderboard();
     require_once __DIR__ . '/../views/results/leaderboard.php';
 
+// 404
+} else {
+    http_response_code(404);
+    require_once __DIR__ . '/../views/layout/404.php';
+}
 // =============================================================
 // 404
 // =============================================================

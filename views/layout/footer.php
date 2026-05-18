@@ -1,3 +1,12 @@
+<?php // views/layout/footer.php ?>
+</main>
+<footer class="mt-5 py-4" style="border-top:1px solid #2a2d3e; min-height:180px;">
+    <div class="container">
+        <div class="row gy-3 align-items-start">
+            <div class="col-md-4">
+                <div class="fw-bold mb-1" style="color:#00d4d4;"><i class="bi bi-mortarboard-fill me-1"></i>QuizApp</div>
+                <div class="small text-muted">Web Technologies Lab Project</div>
+            </div>
 <?php // views/layout/footer.php 
 ?>
 </main>
@@ -20,6 +29,8 @@
                 <div class="d-flex flex-column gap-1">
                     <a href="<?= BASE ?>?page=home" class="text-muted text-decoration-none small">Home</a>
                     <a href="<?= BASE ?>?page=leaderboard" class="text-muted text-decoration-none small">Leaderboard</a>
+                </div>
+            </div>
                     <?php if (!isset($_SESSION['user_id'])): ?>
                         <a href="<?= BASE ?>?page=login" class="text-muted text-decoration-none small">Login</a>
                         <a href="<?= BASE ?>?page=register" class="text-muted text-decoration-none small">Register</a>
@@ -35,6 +46,9 @@
                     <a href="#" class="text-muted text-decoration-none small">Terms of Service</a>
                 </div>
             </div>
+;        </div>
+        <div class="text-center mt-3 pt-2" style="border-top:1px solid #2a2d3e;">
+            <small class="text-muted">&copy; <?= date('Y') ?> American International University Of Bangladesh. All rights reserved.</small>
 
         </div>
 

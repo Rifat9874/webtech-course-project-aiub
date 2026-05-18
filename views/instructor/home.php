@@ -9,6 +9,9 @@ require_once __DIR__ . '/../layout/header.php';
         <h2 class="fw-black mb-1">🎓 Instructor Panel — <?= htmlspecialchars($_SESSION['name']) ?></h2>
         <p class="text-muted mb-0">Overview of your quizzes and student activity.</p>
     </div>
+    <div class="row g-4 mb-5">
+        <div class="col-sm-6">
+            <div class="card text-center p-4 h-100">
 
     <div class="row g-4 mb-5">
         <div class="col-sm-6">
@@ -20,6 +23,7 @@ require_once __DIR__ . '/../layout/header.php';
             </div>
         </div>
         <div class="col-sm-6">
+            <div class="card text-center p-4 h-100">
             <div class="card text-center p-4 h-100" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
                 <div style="font-size:2.5rem">📊</div>
                 <div class="display-5 fw-black text-success mt-2"><?= (int)($stats['total_attempts'] ?? 0) ?></div>
@@ -28,6 +32,16 @@ require_once __DIR__ . '/../layout/header.php';
             </div>
         </div>
     </div>
+    <div class="card p-4">
+        <h5 class="fw-bold mb-3">Quick Actions</h5>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="<?= BASE ?>?page=instructor/quizzes/create" class="btn btn-primary"><i class="bi bi-plus-circle-fill me-2"></i>Create New Quiz</a>
+            <a href="<?= BASE ?>?page=instructor/quizzes" class="btn btn-outline-secondary"><i class="bi bi-collection me-2"></i>All My Quizzes</a>
+            <a href="<?= BASE ?>?page=instructor/analytics" class="btn btn-outline-success"><i class="bi bi-bar-chart me-2"></i>Student Analytics</a>
+        </div>
+    </div>
+</div>
+<?php require_once __DIR__ . '/../layout/footer.php'; ?>
 
     <!-- Quick actions -->
     <div class="card p-4">

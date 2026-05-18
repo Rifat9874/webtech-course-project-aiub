@@ -9,3 +9,4 @@ require_once __DIR__ . '/header.php';
     <a href="<?= BASE ?>?page=home" class="btn btn-primary btn-lg mt-2">Go to Homepage</a>
 </div>
 <?php require_once __DIR__ . '/footer.php'; ?>
+<?php require_once __DIR__ . '/footer.php'; ?>

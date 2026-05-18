@@ -1,4 +1,20 @@
 <?php
+// ============================================================
+// config/database.php
+// Database connection — connects PHP to MySQL via XAMPP.
+// Every model file uses this to talk to the database.
+// ============================================================
+
+$host    = 'localhost';     // XAMPP MySQL is always localhost
+$dbname  = 'quiz_platform'; // Your database name in phpMyAdmin
+$user    = 'root';          // XAMPP default username
+$pass    = '';              // XAMPP default password = empty string
+$charset = 'utf8mb4';       // Supports all characters + emojis
+
+// ─────────────────────────────────────────────────────────────
+// getDB() — Call this anywhere to get a PDO database connection
+// Example: $db = getDB();
+// ─────────────────────────────────────────────────────────────
 
 
 $host    = 'localhost';     
@@ -24,4 +40,5 @@ function getDB() {
     } catch (PDOException $e) {
         die("Database connection failed: " . $e->getMessage());
     }
+}
 }
